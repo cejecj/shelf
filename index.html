@@ -150,12 +150,12 @@
   <h2 id="sheetTitle">Add a book</h2>
   <div class="field">
     <label>Title</label>
-    <input id="inTitle" type="text" placeholder="The Name of the Wind"
+    <input id="inTitle" type="text" placeholder="Enter title here"
            autocapitalize="words" autocomplete="off" spellcheck="true" enterkeyhint="next">
   </div>
   <div class="field">
     <label>Author(s)</label>
-    <textarea id="inAuthor" rows="2" placeholder="One author per line"
+    <textarea id="inAuthor" rows="2" placeholder="Enter author(s) here"
               autocapitalize="words" spellcheck="true"></textarea>
   </div>
   <div class="field">
@@ -164,7 +164,7 @@
   </div>
   <div class="field">
     <label>Description</label>
-    <textarea id="inDesc" rows="3" placeholder="Notes, summary, why you added it…"
+    <textarea id="inDesc" rows="3" placeholder="Add Notes"
               autocapitalize="sentences" spellcheck="true"></textarea>
   </div>
   <div class="status-pick" id="statusPick">
@@ -183,7 +183,8 @@
 const GENRES = [
   'Biography','Classics','Essays','Fantasy','Fiction','Historical',
   'Horror','Memoir', 'Music', 'Mystery','Nonfiction','Philosophy','Poetry',
-  'Romance','Science','Science Fiction','Self-Help','Thriller','Young Adult'
+  'Romance','Science','Science Fiction','Self-Help','Thriller','Young Adult',
+  'Other'
 ];
 
 const STATUS = {
