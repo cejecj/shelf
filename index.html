@@ -62,21 +62,25 @@
   .status-dot{width:9px;height:9px;border-radius:50%;flex:none;margin-top:7px;}
   .card-body{flex:1;min-width:0;}
   .b-title{font-family:'Fraunces',serif;font-size:18px;font-weight:500;line-height:1.2;letter-spacing:-.01em;}
-  .b-author{color:var(--muted);font-size:13.5px;margin-top:3px;}
+  .b-author{color:var(--muted);font-size:13.5px;margin-top:3px;white-space:pre-line;}
+  .b-desc{color:var(--muted);font-size:13px;line-height:1.45;margin-top:9px;white-space:pre-line;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;}
+  .card.open .b-desc{-webkit-line-clamp:unset;overflow:visible;}
   .b-meta{display:flex;align-items:center;gap:8px;margin-top:9px;flex-wrap:wrap;}
   .tag{font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;padding:3px 9px;border-radius:6px;background:var(--accent-soft);color:var(--accent);}
   .status-label{font-size:11.5px;font-weight:600;letter-spacing:.02em;}
 
   /* expanded controls */
-  .controls{max-height:0;overflow:hidden;transition:max-height .28s ease,margin .28s ease,opacity .2s ease;opacity:0;}
-  .card.open .controls{max-height:120px;margin-top:14px;opacity:1;}
+  .controls{max-height:0;overflow:hidden;transition:max-height .3s ease,margin .3s ease,opacity .2s ease;opacity:0;}
+  .card.open .controls{max-height:180px;margin-top:14px;opacity:1;}
   .ctl-row{display:flex;gap:6px;padding-top:13px;border-top:1px dashed var(--line);}
+  .ctl-row2{display:flex;gap:6px;margin-top:6px;}
   .ctl{flex:1;border:1px solid var(--line);background:var(--surface-2);font-family:inherit;font-size:12px;font-weight:600;padding:9px 4px;border-radius:9px;cursor:pointer;color:var(--muted);transition:all .15s ease;}
   .ctl.active{color:#fff;border-color:transparent;}
   .ctl.active.s-want{background:var(--want);}
   .ctl.active.s-reading{background:var(--reading);}
   .ctl.active.s-finished{background:var(--finished);}
-  .del{flex:none;width:42px;border:1px solid var(--line);background:var(--surface-2);border-radius:9px;cursor:pointer;font-size:15px;color:#b04a3a;}
+  .edit-btn{flex:1;border:1px solid var(--line);background:var(--surface-2);font-family:inherit;font-size:12px;font-weight:600;padding:9px 4px;border-radius:9px;cursor:pointer;color:var(--ink);transition:all .15s ease;}
+  .del{flex:1;border:1px solid var(--line);background:var(--surface-2);font-family:inherit;font-size:12px;font-weight:600;padding:9px 4px;border-radius:9px;cursor:pointer;color:#b04a3a;}
 
   /* empty */
   .empty{text-align:center;padding:70px 30px;color:var(--muted);}
@@ -97,9 +101,14 @@
   .sheet h2{font-family:'Fraunces',serif;font-weight:600;font-size:22px;margin-bottom:18px;}
   .field{margin-bottom:14px;}
   .field label{display:block;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;}
-  .field input{width:100%;font-family:inherit;font-size:16px;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:13px 14px;outline:none;transition:border .15s ease;}
-  .field input:focus{border-color:var(--accent);}
-  .field input::placeholder{color:#b6ac97;}
+  .field input,.field select,.field textarea{width:100%;font-family:inherit;font-size:16px;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:13px 14px;outline:none;transition:border .15s ease;}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
+  .field input::placeholder,.field textarea::placeholder{color:#b6ac97;}
+  .field textarea{line-height:1.4;resize:vertical;min-height:48px;}
+  .field select{appearance:none;-webkit-appearance:none;cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%238a8170' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 14px center;background-size:12px;padding-right:38px;}
+  .field select:has(option[value=""]:checked){color:#b6ac97;}
   .status-pick{display:flex;gap:7px;margin-bottom:22px;}
   .status-pick button{flex:1;font-family:inherit;font-size:12.5px;font-weight:600;padding:11px 4px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);cursor:pointer;transition:all .15s ease;}
   .status-pick button.on{color:#fff;border-color:transparent;}
@@ -114,7 +123,7 @@
 <body>
 <div class="app">
   <header>
-    <div class="wordmark">Bookshelf<span class="dot">.</span></div>
+    <div class="wordmark">Shelf<span class="dot">.</span></div>
     <div class="subtitle" id="subtitle">Your reading, in one place</div>
   </header>
 
@@ -138,21 +147,25 @@
 <div class="backdrop" id="backdrop"></div>
 <div class="sheet" id="sheet">
   <div class="grab"></div>
-  <h2>Add a book</h2>
+  <h2 id="sheetTitle">Add a book</h2>
   <div class="field">
     <label>Title</label>
     <input id="inTitle" type="text" placeholder="The Name of the Wind"
            autocapitalize="words" autocomplete="off" spellcheck="true" enterkeyhint="next">
   </div>
   <div class="field">
-    <label>Author</label>
-    <input id="inAuthor" type="text" placeholder="Patrick Rothfuss"
-           autocapitalize="words" autocomplete="off" spellcheck="true" enterkeyhint="next">
+    <label>Author(s)</label>
+    <textarea id="inAuthor" rows="2" placeholder="One author per line"
+              autocapitalize="words" spellcheck="true"></textarea>
   </div>
   <div class="field">
     <label>Genre</label>
-    <input id="inGenre" type="text" placeholder="Fantasy"
-           autocapitalize="words" autocomplete="off" spellcheck="true" enterkeyhint="done">
+    <select id="inGenre"></select>
+  </div>
+  <div class="field">
+    <label>Description</label>
+    <textarea id="inDesc" rows="3" placeholder="Notes, summary, why you added it…"
+              autocapitalize="sentences" spellcheck="true"></textarea>
   </div>
   <div class="status-pick" id="statusPick">
     <button data-s="want" class="on s-want">Want to read</button>
@@ -163,6 +176,17 @@
 </div>
 
 <script>
+/* ===========================================================
+   YOUR GENRE LIST — edit this to add or remove genres.
+   These are the only genres that can be chosen for a book.
+   =========================================================== */
+const GENRES = [
+  'Biography','Classics','Essays','Fantasy','Fiction','Historical',
+  'Horror','Memoir','Mystery','Nonfiction','Philosophy','Poetry',
+  'Romance','Science','Science Fiction','Self-Help','Thriller','Young Adult',
+  'Music'
+];
+
 const STATUS = {
   want:     {label:'Want to read', color:'var(--want)'},
   reading:  {label:'Reading',      color:'var(--reading)'},
@@ -173,6 +197,7 @@ let books = [];
 let filterStatus = 'all';
 let filterGenre = 'all';
 let newStatus = 'want';
+let editingId = null;   // null = adding a new book; otherwise the id being edited
 
 const $ = id => document.getElementById(id);
 const esc = s => (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -254,6 +279,7 @@ function renderList(){
             ${b.genre?`<span class="tag">${esc(b.genre)}</span>`:''}
             <span class="status-label" style="color:${st.color}">${st.label}</span>
           </div>
+          ${b.desc?`<div class="b-desc">${esc(b.desc)}</div>`:''}
         </div>
       </div>
       <div class="controls">
@@ -261,13 +287,20 @@ function renderList(){
           ${Object.keys(STATUS).map(k=>
             `<button class="ctl s-${k}${b.status===k?' active':''}" data-set="${k}">${STATUS[k].label}</button>`
           ).join('')}
-          <button class="del" data-del="1">✕</button>
+        </div>
+        <div class="ctl-row2">
+          <button class="edit-btn" data-edit="1">Edit details</button>
+          <button class="del" data-del="1">Delete</button>
         </div>
       </div>`;
     card.querySelector('.card-top').onclick=()=>card.classList.toggle('open');
     card.querySelectorAll('[data-set]').forEach(btn=>{
       btn.onclick=e=>{ e.stopPropagation(); b.status=btn.dataset.set; persist(); render(); };
     });
+    card.querySelector('[data-edit]').onclick=e=>{
+      e.stopPropagation();
+      openSheet(b);
+    };
     card.querySelector('[data-del]').onclick=e=>{
       e.stopPropagation();
       books = books.filter(x=>x.id!==b.id); persist(); render();
@@ -285,49 +318,80 @@ $('statusSeg').querySelectorAll('button').forEach(btn=>{
   };
 });
 
-/* ---------- add sheet ---------- */
-function openSheet(){ $('backdrop').classList.add('show'); $('sheet').classList.add('show'); setTimeout(()=>$('inTitle').focus(),200); }
-function closeSheet(){ $('backdrop').classList.remove('show'); $('sheet').classList.remove('show'); }
-$('fab').onclick=openSheet;
-$('backdrop').onclick=closeSheet;
+/* ---------- the add / edit sheet ---------- */
+function populateGenreSelect(value){
+  const sel = $('inGenre');
+  sel.innerHTML = '<option value="">— Select a genre —</option>';
+  const list = [...GENRES];
+  // Keep any older genre that isn't in the list, so editing never loses it.
+  if(value && !list.includes(value)) list.unshift(value);
+  list.forEach(g=>{
+    const o=document.createElement('option');
+    o.value=g; o.textContent=g;
+    sel.appendChild(o);
+  });
+  sel.value = value || '';
+}
+
+function setStatusPick(status){
+  newStatus = status;
+  $('statusPick').querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.s===status));
+}
+
+function openSheet(book){
+  editingId = book ? book.id : null;
+  $('sheetTitle').textContent = book ? 'Edit book' : 'Add a book';
+  $('save').textContent       = book ? 'Save changes' : 'Add to shelf';
+  $('inTitle').value  = book ? book.title : '';
+  $('inAuthor').value = book ? (book.author||'') : '';
+  populateGenreSelect(book ? (book.genre||'') : '');
+  $('inDesc').value   = book ? (book.desc||'') : '';
+  setStatusPick(book ? book.status : 'want');
+  checkSave();
+  $('backdrop').classList.add('show');
+  $('sheet').classList.add('show');
+  if(!book) setTimeout(()=>$('inTitle').focus(),200);
+}
+
+function closeSheet(){
+  $('backdrop').classList.remove('show');
+  $('sheet').classList.remove('show');
+  editingId = null;
+}
+
+$('fab').onclick = () => openSheet();
+$('backdrop').onclick = closeSheet;
 
 $('statusPick').querySelectorAll('button').forEach(btn=>{
-  btn.onclick=()=>{
-    newStatus=btn.dataset.s;
-    $('statusPick').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===btn));
-  };
+  btn.onclick=()=>setStatusPick(btn.dataset.s);
 });
 
 function checkSave(){ $('save').disabled = $('inTitle').value.trim()==''; }
 $('inTitle').addEventListener('input',checkSave);
-checkSave();
 
 $('save').onclick=()=>{
   const title=$('inTitle').value.trim();
   if(!title) return;
-  books.push({
-    id:Date.now()+''+Math.random().toString(36).slice(2,6),
-    title,
-    author:$('inAuthor').value.trim(),
-    genre:$('inGenre').value.trim(),
-    status:newStatus,
-    added:Date.now()
-  });
+  const author=$('inAuthor').value.trim();
+  const genre=$('inGenre').value;
+  const desc=$('inDesc').value.trim();
+  if(editingId){
+    const b = books.find(x=>x.id===editingId);
+    if(b){ b.title=title; b.author=author; b.genre=genre; b.desc=desc; b.status=newStatus; }
+  } else {
+    books.push({
+      id:Date.now()+''+Math.random().toString(36).slice(2,6),
+      title, author, genre, desc,
+      status:newStatus,
+      added:Date.now()
+    });
+  }
   persist();
-  $('inTitle').value=''; $('inAuthor').value=''; $('inGenre').value='';
-  newStatus='want';
-  $('statusPick').querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',i===0));
-  checkSave();
   closeSheet();
   render();
 };
 
 load();
-</script>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
-}
 </script>
 </body>
 </html>
