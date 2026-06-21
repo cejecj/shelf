@@ -1,6 +1,6 @@
 // Service worker: lets the app open offline by caching its files.
 // Bump the version number whenever you change the app's files.
-const CACHE = 'shelf-v7';
+const CACHE = 'shelf-v8';
 const ASSETS = [
   './',
   './index.html',
