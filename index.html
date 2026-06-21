@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Shelf</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3d5a45">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#ece5d6;
+    --surface:#faf6ec;
+    --surface-2:#f3eddf;
+    --ink:#231f17;
+    --muted:#8a8170;
+    --line:#dcd2bd;
+    --accent:#3d5a45;
+    --accent-soft:#e1e8dd;
+    --want:#a99a7d;
+    --reading:#bf8526;
+    --finished:#3d5a45;
+    --shadow:0 1px 2px rgba(40,33,18,.06),0 8px 24px rgba(40,33,18,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:'Hanken Grotesk',sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    background-image:radial-gradient(circle at 18% -10%,rgba(255,255,255,.5),transparent 45%);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  .app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;}
+
+  /* header */
+  header{padding:32px 22px 14px;}
+  .wordmark{font-family:'Fraunces',serif;font-size:32px;font-weight:600;letter-spacing:-.02em;line-height:1;}
+  .wordmark .dot{color:var(--accent);}
+  .subtitle{color:var(--muted);font-size:13.5px;margin-top:6px;letter-spacing:.01em;}
+
+  /* filters */
+  .filters{padding:6px 22px 4px;position:sticky;top:0;background:linear-gradient(var(--bg) 72%,transparent);z-index:5;}
+  .seg{display:flex;gap:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:13px;padding:4px;}
+  .seg button{flex:1;border:none;background:transparent;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--muted);padding:8px 4px;border-radius:9px;cursor:pointer;transition:all .18s ease;letter-spacing:.01em;}
+  .seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(40,33,18,.1);}
+  .genres{display:flex;gap:7px;overflow-x:auto;padding:12px 22px 14px;scrollbar-width:none;}
+  .genres::-webkit-scrollbar{display:none;}
+  .chip{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-family:inherit;font-size:12.5px;font-weight:500;padding:6px 13px;border-radius:20px;cursor:pointer;white-space:nowrap;transition:all .18s ease;}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  /* list */
+  .list{flex:1;padding:2px 16px 120px;display:flex;flex-direction:column;gap:9px;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:15px 16px;box-shadow:var(--shadow);cursor:pointer;animation:rise .4s cubic-bezier(.2,.7,.3,1) backwards;}
+  @keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .card-top{display:flex;align-items:flex-start;gap:12px;}
+  .status-dot{width:9px;height:9px;border-radius:50%;flex:none;margin-top:7px;}
+  .card-body{flex:1;min-width:0;}
+  .b-title{font-family:'Fraunces',serif;font-size:18px;font-weight:500;line-height:1.2;letter-spacing:-.01em;}
+  .b-author{color:var(--muted);font-size:13.5px;margin-top:3px;}
+  .b-meta{display:flex;align-items:center;gap:8px;margin-top:9px;flex-wrap:wrap;}
+  .tag{font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;padding:3px 9px;border-radius:6px;background:var(--accent-soft);color:var(--accent);}
+  .status-label{font-size:11.5px;font-weight:600;letter-spacing:.02em;}
+
+  /* expanded controls */
+  .controls{max-height:0;overflow:hidden;transition:max-height .28s ease,margin .28s ease,opacity .2s ease;opacity:0;}
+  .card.open .controls{max-height:120px;margin-top:14px;opacity:1;}
+  .ctl-row{display:flex;gap:6px;padding-top:13px;border-top:1px dashed var(--line);}
+  .ctl{flex:1;border:1px solid var(--line);background:var(--surface-2);font-family:inherit;font-size:12px;font-weight:600;padding:9px 4px;border-radius:9px;cursor:pointer;color:var(--muted);transition:all .15s ease;}
+  .ctl.active{color:#fff;border-color:transparent;}
+  .ctl.active.s-want{background:var(--want);}
+  .ctl.active.s-reading{background:var(--reading);}
+  .ctl.active.s-finished{background:var(--finished);}
+  .del{flex:none;width:42px;border:1px solid var(--line);background:var(--surface-2);border-radius:9px;cursor:pointer;font-size:15px;color:#b04a3a;}
+
+  /* empty */
+  .empty{text-align:center;padding:70px 30px;color:var(--muted);}
+  .empty .ico{font-family:'Fraunces',serif;font-size:46px;color:var(--line);}
+  .empty p{margin-top:10px;font-size:14px;line-height:1.5;}
+
+  /* FAB */
+  .fab{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;border:none;font-family:inherit;font-size:15px;font-weight:600;padding:15px 26px;border-radius:30px;box-shadow:0 6px 22px rgba(61,90,69,.4);cursor:pointer;display:flex;align-items:center;gap:9px;z-index:20;transition:transform .15s ease;}
+  .fab:active{transform:translateX(-50%) scale(.96);}
+  .fab .plus{font-size:20px;line-height:1;margin-top:-1px;}
+
+  /* sheet */
+  .backdrop{position:fixed;inset:0;background:rgba(35,31,23,.45);opacity:0;pointer-events:none;transition:opacity .3s ease;z-index:30;backdrop-filter:blur(2px);}
+  .backdrop.show{opacity:1;pointer-events:auto;}
+  .sheet{position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;background:var(--surface);border-radius:24px 24px 0 0;padding:10px 22px calc(28px + env(safe-area-inset-bottom));transform:translateY(110%);transition:transform .34s cubic-bezier(.3,.8,.3,1);z-index:31;box-shadow:0 -10px 40px rgba(40,33,18,.18);}
+  .sheet.show{transform:none;}
+  .grab{width:38px;height:4px;background:var(--line);border-radius:3px;margin:0 auto 18px;}
+  .sheet h2{font-family:'Fraunces',serif;font-weight:600;font-size:22px;margin-bottom:18px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;}
+  .field input{width:100%;font-family:inherit;font-size:16px;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:13px 14px;outline:none;transition:border .15s ease;}
+  .field input:focus{border-color:var(--accent);}
+  .field input::placeholder{color:#b6ac97;}
+  .status-pick{display:flex;gap:7px;margin-bottom:22px;}
+  .status-pick button{flex:1;font-family:inherit;font-size:12.5px;font-weight:600;padding:11px 4px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);cursor:pointer;transition:all .15s ease;}
+  .status-pick button.on{color:#fff;border-color:transparent;}
+  .status-pick button.on.s-want{background:var(--want);}
+  .status-pick button.on.s-reading{background:var(--reading);}
+  .status-pick button.on.s-finished{background:var(--finished);}
+  .save{width:100%;background:var(--accent);color:#fff;border:none;font-family:inherit;font-size:15.5px;font-weight:600;padding:15px;border-radius:13px;cursor:pointer;transition:opacity .15s ease;}
+  .save:disabled{opacity:.4;}
+  .loading{text-align:center;padding:60px;color:var(--muted);font-size:14px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="wordmark">Bookshelf<span class="dot">.</span></div>
+    <div class="subtitle" id="subtitle">Your reading, in one place</div>
+  </header>
+
+  <div class="filters">
+    <div class="seg" id="statusSeg">
+      <button data-status="all" class="on">All</button>
+      <button data-status="want">Want to read</button>
+      <button data-status="reading">Reading</button>
+      <button data-status="finished">Finished</button>
+    </div>
+  </div>
+  <div class="genres" id="genres"></div>
+
+  <div class="list" id="list">
+    <div class="loading">Loading your shelf…</div>
+  </div>
+</div>
+
+<button class="fab" id="fab"><span class="plus">+</span> Add a book</button>
+
+<div class="backdrop" id="backdrop"></div>
+<div class="sheet" id="sheet">
+  <div class="grab"></div>
+  <h2>Add a book</h2>
+  <div class="field">
+    <label>Title</label>
+    <input id="inTitle" type="text" placeholder="The Name of the Wind"
+           autocapitalize="words" autocomplete="off" spellcheck="true" enterkeyhint="next">
+  </div>
+  <div class="field">
+    <label>Author</label>
+    <input id="inAuthor" type="text" placeholder="Patrick Rothfuss"
+           autocapitalize="words" autocomplete="off" spellcheck="true" enterkeyhint="next">
+  </div>
+  <div class="field">
+    <label>Genre</label>
+    <input id="inGenre" type="text" placeholder="Fantasy"
+           autocapitalize="words" autocomplete="off" spellcheck="true" enterkeyhint="done">
+  </div>
+  <div class="status-pick" id="statusPick">
+    <button data-s="want" class="on s-want">Want to read</button>
+    <button data-s="reading" class="s-reading">Reading</button>
+    <button data-s="finished" class="s-finished">Finished</button>
+  </div>
+  <button class="save" id="save">Add to shelf</button>
+</div>
+
+<script>
+const STATUS = {
+  want:     {label:'Want to read', color:'var(--want)'},
+  reading:  {label:'Reading',      color:'var(--reading)'},
+  finished: {label:'Finished',     color:'var(--finished)'}
+};
+
+let books = [];
+let filterStatus = 'all';
+let filterGenre = 'all';
+let newStatus = 'want';
+
+const $ = id => document.getElementById(id);
+const esc = s => (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- persistence (saved in this browser, on this device) ---------- */
+function load(){
+  try{
+    const raw = localStorage.getItem('shelf_books');
+    books = raw ? JSON.parse(raw) : [];
+  }catch(e){ books = []; }
+  render();
+}
+function persist(){
+  try{ localStorage.setItem('shelf_books', JSON.stringify(books)); }
+  catch(e){ console.error('save failed', e); }
+}
+
+/* ---------- rendering ---------- */
+function render(){
+  renderGenres();
+  renderList();
+  renderSubtitle();
+}
+
+function renderSubtitle(){
+  const n = books.length;
+  $('subtitle').textContent = n === 0 ? 'Your reading, in one place'
+    : n + (n===1?' book on your shelf':' books on your shelf');
+}
+
+function renderGenres(){
+  const set = [...new Set(books.map(b=>b.genre).filter(Boolean))].sort();
+  const el = $('genres');
+  el.innerHTML = '';
+  if(set.length === 0){ el.style.display='none'; return; }
+  el.style.display='flex';
+  const mk = (val,txt)=>{
+    const c=document.createElement('button');
+    c.className='chip'+(filterGenre===val?' on':'');
+    c.textContent=txt;
+    c.onclick=()=>{ filterGenre=val; render(); };
+    return c;
+  };
+  el.appendChild(mk('all','All genres'));
+  set.forEach(g=>el.appendChild(mk(g,g)));
+}
+
+function visible(){
+  return books.filter(b=>
+    (filterStatus==='all'||b.status===filterStatus) &&
+    (filterGenre==='all'||b.genre===filterGenre)
+  ).sort((a,b)=>b.added-a.added);
+}
+
+function renderList(){
+  const list = $('list');
+  const items = visible();
+  if(books.length === 0){
+    list.innerHTML = '<div class="empty"><div class="ico">❧</div><p>Your shelf is empty.<br>Tap <b>Add a book</b> to begin.</p></div>';
+    return;
+  }
+  if(items.length === 0){
+    list.innerHTML = '<div class="empty"><div class="ico">❧</div><p>Nothing here with this filter.</p></div>';
+    return;
+  }
+  list.innerHTML='';
+  items.forEach((b,i)=>{
+    const st = STATUS[b.status];
+    const card=document.createElement('div');
+    card.className='card';
+    card.style.animationDelay=(i*0.03)+'s';
+    card.innerHTML = `
+      <div class="card-top">
+        <span class="status-dot" style="background:${st.color}"></span>
+        <div class="card-body">
+          <div class="b-title">${esc(b.title)}</div>
+          ${b.author?`<div class="b-author">${esc(b.author)}</div>`:''}
+          <div class="b-meta">
+            ${b.genre?`<span class="tag">${esc(b.genre)}</span>`:''}
+            <span class="status-label" style="color:${st.color}">${st.label}</span>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="ctl-row">
+          ${Object.keys(STATUS).map(k=>
+            `<button class="ctl s-${k}${b.status===k?' active':''}" data-set="${k}">${STATUS[k].label}</button>`
+          ).join('')}
+          <button class="del" data-del="1">✕</button>
+        </div>
+      </div>`;
+    card.querySelector('.card-top').onclick=()=>card.classList.toggle('open');
+    card.querySelectorAll('[data-set]').forEach(btn=>{
+      btn.onclick=e=>{ e.stopPropagation(); b.status=btn.dataset.set; persist(); render(); };
+    });
+    card.querySelector('[data-del]').onclick=e=>{
+      e.stopPropagation();
+      books = books.filter(x=>x.id!==b.id); persist(); render();
+    };
+    list.appendChild(card);
+  });
+}
+
+/* ---------- status filter ---------- */
+$('statusSeg').querySelectorAll('button').forEach(btn=>{
+  btn.onclick=()=>{
+    filterStatus=btn.dataset.status;
+    $('statusSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===btn));
+    render();
+  };
+});
+
+/* ---------- add sheet ---------- */
+function openSheet(){ $('backdrop').classList.add('show'); $('sheet').classList.add('show'); setTimeout(()=>$('inTitle').focus(),200); }
+function closeSheet(){ $('backdrop').classList.remove('show'); $('sheet').classList.remove('show'); }
+$('fab').onclick=openSheet;
+$('backdrop').onclick=closeSheet;
+
+$('statusPick').querySelectorAll('button').forEach(btn=>{
+  btn.onclick=()=>{
+    newStatus=btn.dataset.s;
+    $('statusPick').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===btn));
+  };
+});
+
+function checkSave(){ $('save').disabled = $('inTitle').value.trim()==''; }
+$('inTitle').addEventListener('input',checkSave);
+checkSave();
+
+$('save').onclick=()=>{
+  const title=$('inTitle').value.trim();
+  if(!title) return;
+  books.push({
+    id:Date.now()+''+Math.random().toString(36).slice(2,6),
+    title,
+    author:$('inAuthor').value.trim(),
+    genre:$('inGenre').value.trim(),
+    status:newStatus,
+    added:Date.now()
+  });
+  persist();
+  $('inTitle').value=''; $('inAuthor').value=''; $('inGenre').value='';
+  newStatus='want';
+  $('statusPick').querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',i===0));
+  checkSave();
+  closeSheet();
+  render();
+};
+
+load();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
+}
+</script>
+</body>
+</html>
